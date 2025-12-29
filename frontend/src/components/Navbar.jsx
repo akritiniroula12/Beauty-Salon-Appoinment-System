@@ -1,10 +1,13 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { FaBars, FaTimes, FaCalendarAlt, FaUser, FaSignInAlt } from 'react-icons/fa';
+import { FaBars, FaTimes, FaCalendarAlt, FaUser, FaSignInAlt, FaSignOutAlt } from 'react-icons/fa';
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuth();
 
   const isActive = (path) => location.pathname === path;
 
@@ -13,6 +16,12 @@ const Navbar = () => {
     { path: '/services', label: 'Services' },
     { path: '/booking', label: 'Book Appointment' },
   ];
+
+  const handleLogout = async () => {
+    await logout();
+    setIsOpen(false);
+    navigate('/login');
+  };
 
   return (
     <nav className="bg-white shadow-lg sticky top-0 z-50">
@@ -53,20 +62,37 @@ const Navbar = () => {
 
           {/* Auth Buttons - Desktop */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link
-              to="/login"
-              className="flex items-center space-x-1 px-4 py-2 text-gray-700 hover:text-pink-600 transition-colors duration-200"
-            >
-              <FaSignInAlt />
-              <span>Login</span>
-            </Link>
-            <Link
-              to="/register"
-              className="flex items-center space-x-1 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors duration-200 shadow-md hover:shadow-lg"
-            >
-              <FaUser />
-              <span>Register</span>
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <span className="text-gray-700 font-medium">
+                  Welcome, {user?.name || user?.email}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center space-x-1 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors duration-200 shadow-md hover:shadow-lg"
+                >
+                  <FaSignOutAlt />
+                  <span>Logout</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="flex items-center space-x-1 px-4 py-2 text-gray-700 hover:text-pink-600 transition-colors duration-200"
+                >
+                  <FaSignInAlt />
+                  <span>Login</span>
+                </Link>
+                <Link
+                  to="/register"
+                  className="flex items-center space-x-1 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors duration-200 shadow-md hover:shadow-lg"
+                >
+                  <FaUser />
+                  <span>Register</span>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -99,22 +125,39 @@ const Navbar = () => {
               </Link>
             ))}
             <div className="pt-4 space-y-2 border-t">
-              <Link
-                to="/login"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-pink-600 hover:bg-gray-50 transition-colors duration-200"
-              >
-                <FaSignInAlt />
-                <span>Login</span>
-              </Link>
-              <Link
-                to="/register"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium bg-pink-600 text-white hover:bg-pink-700 transition-colors duration-200"
-              >
-                <FaUser />
-                <span>Register</span>
-              </Link>
+              {isAuthenticated ? (
+                <>
+                  <p className="px-3 py-2 text-sm font-medium text-gray-700">
+                    {user?.name || user?.email}
+                  </p>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium bg-pink-600 text-white hover:bg-pink-700 transition-colors duration-200"
+                  >
+                    <FaSignOutAlt />
+                    <span>Logout</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-pink-600 hover:bg-gray-50 transition-colors duration-200"
+                  >
+                    <FaSignInAlt />
+                    <span>Login</span>
+                  </Link>
+                  <Link
+                    to="/register"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium bg-pink-600 text-white hover:bg-pink-700 transition-colors duration-200"
+                  >
+                    <FaUser />
+                    <span>Register</span>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

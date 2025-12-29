@@ -99,8 +99,12 @@ export const login = async (req, res) => {
 };
 
 export const logout = async (req, res) => {
-  // Since JWT is stateless, logout is handled client-side by removing the token
-  res.json({ message: 'Logout successful' });
+  try {
+    res.json({ message: 'Logged out successfully' });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ message: 'Server error during logout' });
+  }
 };
 
 export const getMe = async (req, res) => {
@@ -111,17 +115,17 @@ export const getMe = async (req, res) => {
         id: true,
         name: true,
         email: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true
+        isActive: true
       }
     });
+
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
+
     res.json({ user });
   } catch (error) {
-    console.error('Get me error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Get user error:', error);
+    res.status(500).json({ message: 'Server error fetching user' });
   }
 };

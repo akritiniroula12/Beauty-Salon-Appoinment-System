@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { authAPI } from '../services/api.js';
 
 const AuthContext = createContext();
 
@@ -13,63 +14,93 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(null);
 
-  // Check for stored user on mount
+  // Check for stored token and user on mount
   useEffect(() => {
+    const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+    
+    if (storedToken && storedUser) {
+      setToken(storedToken);
       setUser(JSON.parse(storedUser));
+      // Verify token is still valid
+      verifyToken(storedToken);
+    } else {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
-  const login = (email, password) => {
-    // Simple validation - in real app, this would call backend
-    // For demo: accept any email/password
-    if (email && password) {
-      const userData = {
-        id: Date.now(),
-        email,
-        name: email.split('@')[0] // Use email prefix as name
-      };
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      return { success: true };
+  const verifyToken = async (token) => {
+    try {
+      const response = await authAPI.getMe();
+      setUser(response.user);
+      localStorage.setItem('user', JSON.stringify(response.user));
+    } catch (error) {
+      console.error('Token verification failed:', error);
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setToken(null);
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
-    return { success: false, message: 'Please enter email and password' };
   };
 
-  const register = (name, email, password) => {
-    // Simple validation - in real app, this would call backend
-    if (name && email && password) {
-      const userData = {
-        id: Date.now(),
-        name,
-        email
-      };
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      return { success: true };
+  const login = async (email, password) => {
+    try {
+      const response = await authAPI.login({ email, password });
+      setToken(response.token);
+      setUser(response.user);
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('user', JSON.stringify(response.user));
+      return { success: true, user: response.user };
+    } catch (error) {
+      const message = error.response?.data?.message || 'Login failed';
+      return { success: false, message };
     }
-    return { success: false, message: 'Please fill all fields' };
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
+  const register = async (name, email, password) => {
+    try {
+      const response = await authAPI.register({ name, email, password });
+      setToken(response.token);
+      setUser(response.user);
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('user', JSON.stringify(response.user));
+      return { success: true, user: response.user };
+    } catch (error) {
+      const message = error.response?.data?.message || 'Registration failed';
+      return { success: false, message };
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await authAPI.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setUser(null);
+      setToken(null);
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+    }
   };
 
   const value = {
     user,
+    token,
     login,
     register,
     logout,
-    isAuthenticated: !!user
+    isAuthenticated: !!token && !!user,
+    loading,
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };

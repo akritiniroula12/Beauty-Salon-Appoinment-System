@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaLock, FaUserPlus, FaSpinner } from 'react-icons/fa';
+import { useAuth } from '../context/AuthContext';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ const Register = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { register } = useAuth();
 
   const handleChange = (e) => {
     setFormData({
@@ -56,19 +58,13 @@ const Register = () => {
     }
 
     try {
-      // TODO: Replace with actual API call
-      // const response = await axios.post('/api/auth/register', {
-      //   name: formData.name,
-      //   email: formData.email,
-      //   password: formData.password,
-      // });
+      const result = await register(formData.name, formData.email, formData.password);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // On success, redirect to login or home
-      // localStorage.setItem('token', response.data.token);
-      navigate('/login');
+      if (result.success) {
+        navigate('/');
+      } else {
+        setError(result.message || 'Registration failed. Please try again.');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
