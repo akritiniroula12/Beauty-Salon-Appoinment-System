@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 import express from 'express';
 
 import authRoutes from './src/routes/auth.js';
+import appointmentRoutes from './src/routes/appointments.js';
+import serviceRoutes from './src/routes/services.js';
 
 dotenv.config();
 
@@ -15,6 +17,8 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/appointments', appointmentRoutes);
+app.use('/api/services', serviceRoutes);
 
 
 // Health check

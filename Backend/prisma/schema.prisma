@@ -8,15 +8,91 @@ datasource db {
 
 
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String?  @db.VarChar(100)
-  email     String   @unique @db.VarChar(255)
-  password  String   @db.VarChar(255)
-  isActive  Boolean  @default(true)
+  id          Int          @id @default(autoincrement())
+  name        String?      @db.VarChar(100)
+  email       String       @unique @db.VarChar(255)
+  password    String       @db.VarChar(255)
+  isActive    Boolean      @default(true)
+  role        Role         @default(CUSTOMER)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  appointments Appointment[]
+  reviews      Review[]
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
+
+model Staff {
+  id          Int          @id @default(autoincrement())
+  name        String
+  email       String       @unique
+  role        String       // e.g., Stylist, Manager
+  isActive    Boolean      @default(true)
+
+  appointments Appointment[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Service {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique @db.VarChar(100)
+  description String?
+  duration    Int          // in minutes
+  price       Float
+
+  appointments Appointment[]
+  reviews      Review[]
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Appointment {
+  id              Int        @id @default(autoincrement())
+  user            User       @relation(fields: [userId], references: [id])
+  userId          Int
+  service         Service    @relation(fields: [serviceId], references: [id])
+  serviceId       Int
+  staff           Staff?     @relation(fields: [staffId], references: [id])
+  staffId         Int?
+  appointmentDate DateTime
+  status          AppointmentStatus @default(PENDING)
+  paymentStatus   PaymentStatus     @default(PENDING)
+  notes           String?
+
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+}
+
+model Review {
+  id          Int        @id @default(autoincrement())
+  user        User       @relation(fields: [userId], references: [id])
+  userId      Int
+  service     Service    @relation(fields: [serviceId], references: [id])
+  serviceId   Int
+  rating      Int        // 1 to 5
+  comment     String?
+  createdAt   DateTime   @default(now())
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
 
 
 

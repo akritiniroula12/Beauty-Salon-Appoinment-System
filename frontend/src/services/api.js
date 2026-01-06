@@ -61,4 +61,30 @@ export const authAPI = {
   },
 };
 
+// Appointments API calls
+export const appointmentsAPI = {
+  createAppointment: async (data) => {
+    const response = await apiClient.post('/appointments', data);
+    return response.data;
+  },
+
+  getUserAppointments: async () => {
+    const response = await apiClient.get('/appointments');
+    return response.data;
+  },
+};
+
+// Services API calls
+export const servicesAPI = {
+  getServices: async () => {
+    const response = await apiClient.get('/services');
+    return response.data;
+  },
+
+  getServiceById: async (id) => {
+    const response = await apiClient.get(`/services/${id}`);
+    return response.data;
+  },
+};
+
 export default apiClient;

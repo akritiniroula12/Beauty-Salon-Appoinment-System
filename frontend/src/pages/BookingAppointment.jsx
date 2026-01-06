@@ -1,37 +1,52 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaCalendarAlt, FaClock, FaUser, FaEnvelope, FaSpinner } from 'react-icons/fa';
+import { useAuth } from '../context/AuthContext';
+import { appointmentsAPI, servicesAPI } from '../services/api';
 
 const BookingAppointment = () => {
+  const { user, isAuthenticated } = useAuth();
+  const [services, setServices] = useState([]);
+  const [loadingServices, setLoadingServices] = useState(true);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    service: '',
+    serviceId: '',
     date: '',
     time: '',
+    notes: '',
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState('');
 
-  const services = [
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await servicesAPI.getServices();
+        setServices(response.services);
+      } catch (error) {
+        console.error('Failed to fetch services:', error);
+        setSubmitMessage('Failed to load services. Please try again.');
+      } finally {
+        setLoadingServices(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
+
+  const serviceOptions = [
     { value: '', label: 'Select a service' },
-    { value: 'haircut', label: 'Haircut & Styling' },
-    { value: 'coloring', label: 'Hair Coloring' },
-    { value: 'facial', label: 'Facial Treatment' },
-    { value: 'manicure', label: 'Manicure & Pedicure' },
-    { value: 'treatment', label: 'Hair Treatment' },
-    { value: 'makeup', label: 'Makeup Services' },
-    { value: 'eyebrow', label: 'Eyebrow Shaping' },
-    { value: 'waxing', label: 'Waxing Services' },
-    { value: 'extensions', label: 'Hair Extensions' },
+    ...services.map(service => ({
+      value: service.id.toString(),
+      label: `${service.name} - $${service.price} (${service.duration} min)`
+    }))
   ];
 
   const timeSlots = [
-    '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM',
-    '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM',
-    '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM',
-    '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM',
-    '05:00 PM', '05:30 PM', '06:00 PM',
+    '09:00', '09:30', '10:00', '10:30',
+    '11:00', '11:30', '12:00', '12:30',
+    '13:00', '13:30', '14:00', '14:30',
+    '15:00', '15:30', '16:00', '16:30',
+    '17:00', '17:30', '18:00',
   ];
 
   const handleChange = (e) => {
@@ -47,17 +62,16 @@ const BookingAppointment = () => {
     setIsSubmitting(true);
     setSubmitMessage('');
 
-    // Validate form
-    if (!formData.name || !formData.email || !formData.service || !formData.date || !formData.time) {
-      setSubmitMessage('Please fill in all fields');
+    // Check if user is authenticated
+    if (!isAuthenticated || !user) {
+      setSubmitMessage('Please login to book an appointment');
       setIsSubmitting(false);
       return;
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      setSubmitMessage('Please enter a valid email address');
+    // Validate form
+    if (!formData.serviceId || !formData.date || !formData.time) {
+      setSubmitMessage('Please fill in all required fields');
       setIsSubmitting(false);
       return;
     }
@@ -73,22 +87,29 @@ const BookingAppointment = () => {
     }
 
     try {
-      // TODO: Replace with actual API call
-      // const response = await axios.post('/api/appointments', formData);
+      // Combine date and time into appointmentDate
+      const [hours, minutes] = formData.time.split(':');
+      const appointmentDate = new Date(formData.date);
+      appointmentDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+
+      const appointmentData = {
+        serviceId: parseInt(formData.serviceId),
+        appointmentDate: appointmentDate.toISOString(),
+        notes: formData.notes || '',
+      };
+
+      const response = await appointmentsAPI.createAppointment(appointmentData);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      setSubmitMessage('Appointment booked successfully! We will contact you soon.');
+      setSubmitMessage('Appointment booked successfully!');
       setFormData({
-        name: '',
-        email: '',
-        service: '',
+        serviceId: '',
         date: '',
         time: '',
+        notes: '',
       });
     } catch (error) {
-      setSubmitMessage('Failed to book appointment. Please try again.');
+      console.error('Booking error:', error);
+      setSubmitMessage(error.response?.data?.message || 'Failed to book appointment. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -113,62 +134,37 @@ const BookingAppointment = () => {
         {/* Booking Form */}
         <div className="bg-white rounded-lg shadow-xl p-8 md:p-10">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Name Field */}
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                <FaUser className="inline mr-2 text-pink-600" />
-                Full Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
-                placeholder="Enter your full name"
-              />
-            </div>
-
-            {/* Email Field */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                <FaEnvelope className="inline mr-2 text-pink-600" />
-                Email Address
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
-                placeholder="Enter your email address"
-              />
-            </div>
+            {/* User Info Display */}
+            {isAuthenticated && user && (
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <p className="text-sm text-gray-600">
+                  Booking for: <span className="font-medium text-gray-800">{user.name}</span> ({user.email})
+                </p>
+              </div>
+            )}
 
             {/* Service Selection */}
             <div>
-              <label htmlFor="service" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="serviceId" className="block text-sm font-medium text-gray-700 mb-2">
                 <FaSpinner className="inline mr-2 text-pink-600" />
                 Select Service
               </label>
               <select
-                id="service"
-                name="service"
-                value={formData.service}
+                id="serviceId"
+                name="serviceId"
+                value={formData.serviceId}
                 onChange={handleChange}
                 required
+                disabled={loadingServices}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 bg-white"
               >
-                {services.map((service) => (
+                {serviceOptions.map((service) => (
                   <option key={service.value} value={service.value}>
                     {service.label}
                   </option>
                 ))}
               </select>
+              {loadingServices && <p className="text-sm text-gray-500 mt-1">Loading services...</p>}
             </div>
 
             {/* Date and Time Row */}
@@ -213,6 +209,22 @@ const BookingAppointment = () => {
                   ))}
                 </select>
               </div>
+            </div>
+
+            {/* Notes Field */}
+            <div>
+              <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
+                Additional Notes (Optional)
+              </label>
+              <textarea
+                id="notes"
+                name="notes"
+                value={formData.notes}
+                onChange={handleChange}
+                rows={3}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
+                placeholder="Any special requests or notes..."
+              />
             </div>
 
             {/* Submit Message */}

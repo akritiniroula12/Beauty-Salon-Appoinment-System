@@ -1,76 +1,43 @@
-import { FaSpinner, FaStar, FaClock } from 'react-icons/fa';
-// Import your images here. Add more imports as needed.
-import haircoloringImage from '../image/haircoloring.jpg';
+import { useState, useEffect } from 'react';
+import { FaSpinner, FaClock } from 'react-icons/fa';
+import { servicesAPI } from '../services/api';
 
 const Services = () => {
-  // Helper function to check if the image is a file path
-  const isImageFile = (image) => {
-    return typeof image === 'string' && /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(image);
-  };
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // Map of image filenames to imported images
-  const imageMap = {
-    'haircoloring.jpg': haircoloringImage,
-    // Add more image mappings here as you add images
-    // 'your-image.jpg': yourImageImport,
-  };
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await servicesAPI.getServices();
+        setServices(response.services);
+      } catch (error) {
+        console.error('Failed to fetch services:', error);
+        setError('Failed to load services. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const services = [
-    {
-      id: 1,
-      name: 'Haircut & Styling',
-      description: 'Professional haircut and styling services tailored to your preferences. Our expert stylists will help you achieve the perfect look.',
-      price: 'Rs.950',
-      duration: '45 min',
-      image: '✂️', // You can use emoji OR image file name (e.g., 'haircut.jpg')
-      rating: 4.9,
-    },
-    {
-      id: 2,
-      name: 'Hair Coloring',
-      description: 'Expert hair coloring and highlights using premium products. Transform your look with vibrant colors or subtle highlights.',
-      price: 'Rs.1200',
-      duration: '2 hours',
-      image: 'haircoloring.jpg', // Use image filename for actual images
-      rating: 4.8,
-    },
-    {
-      id: 3,
-      name: 'Facial Treatment',
-      description: 'Relaxing and rejuvenating facial treatments designed to refresh and revitalize your skin. Perfect for all skin types.',
-      price: 'Rs.1000',
-      duration: '60 min',
-      image: '✨', // Or use emoji
-      rating: 4.9,
-    },
-    {
-      id: 4,
-      name: 'Manicure & Pedicure',
-      description: 'Complete nail care services including manicure and pedicure. Choose from a variety of colors and designs.',
-      price: 'Rs.600',
-      duration: '90 min',
-      image: '💅',
-      rating: 4.7,
-    },
-    {
-      id: 5,
-      name: 'Hair Treatment',
-      description: 'Deep conditioning and repair treatments for damaged hair. Restore shine and strength to your locks.',
-      price: 'Rs.2270',
-      duration: '60 min',
-      image: '💆',
-      rating: 4.8,
-    },
-    {
-      id: 6,
-      name: 'Makeup Services',
-      description: 'Professional makeup application for special events, weddings, or everyday glam. Our makeup artists will enhance your natural beauty.',
-      price: 'Rs.3990',
-      duration: '90 min',
-      image: '💄',
-      rating: 4.9,
-    },
-  ];
+    fetchServices();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <FaSpinner className="animate-spin text-4xl text-pink-500" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -92,38 +59,19 @@ const Services = () => {
               key={service.id}
               className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
             >
-              {/* Service Image/Icon */}
-              <div className="bg-gradient-to-br from-pink-100 to-purple-100 p-8 text-center">
-                {isImageFile(service.image) ? (
-                  <img 
-                    src={imageMap[service.image]} 
-                    alt={service.name}
-                    className="w-full h-48 object-cover rounded-lg mb-4"
-                  />
-                ) : (
-                  <div className="text-6xl mb-4">{service.image}</div>
-                )}
-              </div>
-
               {/* Service Content */}
               <div className="p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xl font-semibold text-gray-800">{service.name}</h3>
-                  <div className="flex items-center space-x-1 text-yellow-500">
-                    <FaStar className="text-sm" />
-                    <span className="text-sm font-medium text-gray-700">{service.rating}</span>
-                  </div>
-                </div>
+                <h3 className="text-xl font-semibold text-gray-800 mb-3">{service.name}</h3>
 
                 <p className="text-gray-600 mb-4 line-clamp-3">{service.description}</p>
 
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-2 text-gray-600">
                     <FaClock className="text-pink-600" />
-                    <span className="text-sm">{service.duration}</span>
+                    <span className="text-sm">{service.duration} min</span>
                   </div>
                   <div className="flex items-center space-x-2 text-gray-800">
-                    <span className="text-lg font-bold">{service.price}</span>
+                    <span className="text-lg font-bold">${service.price}</span>
                   </div>
                 </div>
 
