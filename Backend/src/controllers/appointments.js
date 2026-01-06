@@ -3,7 +3,7 @@ import { prisma } from '../lib/prisma.js';
 export const createAppointment = async (req, res) => {
   try {
     const { serviceId, staffId, appointmentDate, notes } = req.body;
-    const userId = req.user.id; // Assuming auth middleware sets req.user
+    const userId = req.user.userId; // Assuming auth middleware sets req.user
 
     // Validate required fields
     if (!serviceId || !appointmentDate) {
@@ -57,7 +57,7 @@ export const createAppointment = async (req, res) => {
 
 export const getUserAppointments = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.userId;
 
     const appointments = await prisma.appointment.findMany({
       where: { userId },
