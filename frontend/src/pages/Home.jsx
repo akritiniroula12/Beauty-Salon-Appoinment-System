@@ -1,27 +1,27 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaSpinner, FaCalendarCheck, FaStar, FaUsers, FaArrowRight } from 'react-icons/fa';
+import { servicesAPI } from '../services/api';
 
 const Home = () => {
-  const featuredServices = [
-    {
-      id: 1,
-      name: 'Haircut & Styling',
-      description: 'Professional haircut and styling services',
-      icon: '✂️',
-    },
-    {
-      id: 2,
-      name: 'Hair Coloring',
-      description: 'Expert hair coloring and highlights',
-      icon: '🎨',
-    },
-    {
-      id: 3,
-      name: 'Facial Treatment',
-      description: 'Relaxing and rejuvenating facial treatments',
-      icon: '✨',
-    },
-  ];
+  const [featuredServices, setFeaturedServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await servicesAPI.getServices();
+        // Get first 3 services for featured section
+        setFeaturedServices(response.services.slice(0, 3));
+      } catch (error) {
+        console.error('Failed to fetch featured services:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
 
   const stats = [
     { icon: FaUsers, number: '5000+', label: 'Happy Clients' },
@@ -90,26 +90,38 @@ const Home = () => {
               Discover our most popular services designed to make you look and feel your best
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {featuredServices.map((service) => (
-              <div
-                key={service.id}
-                className="bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
-              >
-                <div className="text-5xl mb-4 text-center">{service.icon}</div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2 text-center">
-                  {service.name}
-                </h3>
-                <p className="text-gray-600 text-center mb-4">{service.description}</p>
-                <Link
-                  to="/services"
-                  className="block text-center text-pink-600 font-semibold hover:text-pink-700 transition-colors duration-200"
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <FaSpinner className="animate-spin text-4xl text-pink-500" />
+            </div>
+          ) : featuredServices.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {featuredServices.map((service) => (
+                <div
+                  key={service.id}
+                  className="bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
                 >
-                  Learn More →
-                </Link>
-              </div>
-            ))}
-          </div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    {service.name}
+                  </h3>
+                  <p className="text-gray-600 mb-4 line-clamp-2">{service.description}</p>
+                  <div className="text-sm text-gray-500 mb-4">
+                    ${service.price} • {service.duration} min
+                  </div>
+                  <Link
+                    to="/services"
+                    className="block text-center text-pink-600 font-semibold hover:text-pink-700 transition-colors duration-200"
+                  >
+                    Learn More →
+                  </Link>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-gray-600">
+              <p>No services available</p>
+            </div>
+          )}
           <div className="text-center mt-12">
             <Link
               to="/services"

@@ -61,7 +61,8 @@ const Register = () => {
       const result = await register(formData.name, formData.email, formData.password);
       
       if (result.success) {
-        navigate('/');
+        // Redirect to user dashboard (new registrations are CUSTOMER role)
+        navigate('/user/dashboard');
       } else {
         setError(result.message || 'Registration failed. Please try again.');
       }

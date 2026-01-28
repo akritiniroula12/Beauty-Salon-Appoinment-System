@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { authAPI } from '../services/api.js';
+import { authAPI } from '../services/api';
 
 const AuthContext = createContext();
 
@@ -13,62 +13,61 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [role, setRole] = useState(null); // 'admin' or 'user'
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(null);
 
-  // Check for stored token and user on mount
+  // On first load, restore any saved user and role from localStorage
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
-    
-    if (storedToken && storedUser) {
-      setToken(storedToken);
+    const storedRole = localStorage.getItem('role');
+
+    if (storedUser && storedRole) {
       setUser(JSON.parse(storedUser));
-      // Verify token is still valid
-      verifyToken(storedToken);
-    } else {
-      setLoading(false);
+      setRole(storedRole);
     }
+    setLoading(false);
   }, []);
 
-  const verifyToken = async (token) => {
-    try {
-      const response = await authAPI.getMe();
-      setUser(response.user);
-      localStorage.setItem('user', JSON.stringify(response.user));
-    } catch (error) {
-      console.error('Token verification failed:', error);
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      setToken(null);
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const login = async (email, password) => {
+  // Real login with backend API
+  const login = async (email, password, selectedRole) => {
     try {
       const response = await authAPI.login({ email, password });
-      setToken(response.token);
-      setUser(response.user);
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
-      return { success: true, user: response.user };
+      
+      if (response.token && response.user) {
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('user', JSON.stringify(response.user));
+        localStorage.setItem('role', response.user.role); // Use role from API
+        
+        setUser(response.user);
+        setRole(response.user.role); // Use role from API
+        
+        return { success: true, user: response.user };
+      } else {
+        return { success: false, message: 'Invalid response from server' };
+      }
     } catch (error) {
       const message = error.response?.data?.message || 'Login failed';
       return { success: false, message };
     }
   };
 
+  // Real register with backend API
   const register = async (name, email, password) => {
     try {
       const response = await authAPI.register({ name, email, password });
-      setToken(response.token);
-      setUser(response.user);
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
-      return { success: true, user: response.user };
+      
+      if (response.token && response.user) {
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('user', JSON.stringify(response.user));
+        localStorage.setItem('role', response.user.role);
+        
+        setUser(response.user);
+        setRole(response.user.role); // Register returns CUSTOMER role by default
+        
+        return { success: true, user: response.user };
+      } else {
+        return { success: false, message: 'Invalid response from server' };
+      }
     } catch (error) {
       const message = error.response?.data?.message || 'Registration failed';
       return { success: false, message };
@@ -76,25 +75,19 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    try {
-      await authAPI.logout();
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      setUser(null);
-      setToken(null);
-      localStorage.removeItem('user');
-      localStorage.removeItem('token');
-    }
+    setUser(null);
+    setRole(null);
+    localStorage.removeItem('user');
+    localStorage.removeItem('role');
   };
 
   const value = {
     user,
-    token,
+    role,
     login,
     register,
     logout,
-    isAuthenticated: !!token && !!user,
+    isAuthenticated: !!user && !!role,
     loading,
   };
 

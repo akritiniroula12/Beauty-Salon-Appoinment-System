@@ -7,6 +7,7 @@ const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    role: 'user', // default role
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -27,7 +28,7 @@ const Login = () => {
     setError('');
 
     // Validate form
-    if (!formData.email || !formData.password) {
+    if (!formData.email || !formData.password || !formData.role) {
       setError('Please fill in all fields');
       setIsSubmitting(false);
       return;
@@ -42,10 +43,19 @@ const Login = () => {
     }
 
     try {
-      const result = await login(formData.email, formData.password);
-      
+      const result = await login(formData.email, formData.password, formData.role);
+
       if (result.success) {
-        navigate('/');
+        // Get role from API response, not from form
+        const userRole = result.user.role;
+        localStorage.setItem('role', userRole);
+
+        // Redirect based on actual role from API
+        if (userRole === 'ADMIN') {
+          navigate('/admin/dashboard');
+        } else {
+          navigate('/user/dashboard');
+        }
       } else {
         setError(result.message || 'Invalid email or password. Please try again.');
       }
@@ -103,6 +113,7 @@ const Login = () => {
                 placeholder="Enter your password"
               />
             </div>
+
 
             {/* Remember Me & Forgot Password */}
             <div className="flex items-center justify-between">
