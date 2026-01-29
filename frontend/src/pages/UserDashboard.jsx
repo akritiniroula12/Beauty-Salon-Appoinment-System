@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { FaCalendarAlt, FaSignOutAlt, FaClock, FaUser, FaArrowRight } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { appointmentsAPI } from '../services/api';
+import { formatCurrency } from '../utils/formatters';
 
 const UserDashboard = () => {
   const navigate = useNavigate();
@@ -197,7 +198,9 @@ const UserDashboard = () => {
                       <td className="px-6 py-4">
                         <div>
                           <p className="font-semibold text-gray-800">{appointment.service?.name}</p>
-                          <p className="text-sm text-gray-600">${appointment.service?.price}</p>
+                          <p className="text-sm text-gray-600">
+                            {formatCurrency(appointment.service?.price)}
+                          </p>
                         </div>
                       </td>
                       <td className="px-6 py-4">

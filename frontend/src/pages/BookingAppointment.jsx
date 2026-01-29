@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { FaCalendarAlt, FaClock, FaUser, FaEnvelope, FaSpinner } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { appointmentsAPI, servicesAPI } from '../services/api';
+import { formatCurrency } from '../utils/formatters';
 
 const BookingAppointment = () => {
   const { user, isAuthenticated } = useAuth();
@@ -37,7 +38,7 @@ const BookingAppointment = () => {
     { value: '', label: 'Select a service' },
     ...services.map(service => ({
       value: service.id.toString(),
-      label: `${service.name} - $${service.price} (${service.duration} min)`
+      label: `${service.name} - ${formatCurrency(service.price)} (${service.duration} min)`
     }))
   ];
 

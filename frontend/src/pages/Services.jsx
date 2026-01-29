@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FaSpinner, FaClock } from 'react-icons/fa';
 import { servicesAPI } from '../services/api';
+import { formatCurrency } from '../utils/formatters';
 
 const Services = () => {
   const [services, setServices] = useState([]);
@@ -59,6 +60,19 @@ const Services = () => {
               key={service.id}
               className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
             >
+              {/* Service Image */}
+              {service.image ? (
+                <img 
+                  src={service.image} 
+                  alt={service.name}
+                  className="w-full h-48 object-cover"
+                />
+              ) : (
+                <div className="w-full h-48 bg-gradient-to-r from-pink-300 to-purple-300 flex items-center justify-center">
+                  <span className="text-white text-lg font-semibold">No Image Available</span>
+                </div>
+              )}
+
               {/* Service Content */}
               <div className="p-6">
                 <h3 className="text-xl font-semibold text-gray-800 mb-3">{service.name}</h3>
@@ -71,7 +85,7 @@ const Services = () => {
                     <span className="text-sm">{service.duration} min</span>
                   </div>
                   <div className="flex items-center space-x-2 text-gray-800">
-                    <span className="text-lg font-bold">${service.price}</span>
+                    <p className="text-lg font-bold">Rs. {service.price}</p>
                   </div>
                 </div>
 

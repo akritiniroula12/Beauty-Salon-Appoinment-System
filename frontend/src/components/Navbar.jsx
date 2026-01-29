@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { FaBars, FaTimes, FaCalendarAlt, FaUser, FaSignInAlt, FaSignOutAlt, FaHome } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
+import logoImg from '../image/logo.png'; // Ensure this path is correct
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,25 +25,40 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="bg-white shadow-lg sticky top-0 z-50">
+    <nav className="bg-white sticky top-0 z-[100] border-b border-pink-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <FaCalendarAlt className="text-2xl text-pink-600" />
-            <span className="text-xl font-bold text-gray-800">Beauty Salon</span>
+        <div className="flex justify-between items-center h-20">
+          
+          {/* Logo & Brand Name */}
+          <Link to="/" className="flex items-center group">
+            <div className="relative">
+              <div className="absolute inset-0 bg-yellow-200 blur-2xl opacity-0 group-hover:opacity-30 transition-opacity rounded-full"></div>
+              <img 
+                src={logoImg} 
+                alt="Elora Logo" 
+                className="h-16 w-auto object-contain relative z-10 transition-transform duration-500 group-hover:scale-105" 
+              />
+            </div>
+            <div className="ml-4 flex flex-col border-l border-gray-100 pl-4">
+              <span className="text-2xl font-light text-gray-900 tracking-[0.15em] uppercase leading-none">
+                Elora
+              </span>
+              <span className="text-[10px] font-bold text-pink-500 uppercase tracking-[0.3em] mt-1.5 leading-none">
+                Hair & Skin
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-1">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
                   isActive(link.path)
                     ? 'text-pink-600 bg-pink-50'
-                    : 'text-gray-700 hover:text-pink-600 hover:bg-gray-50'
+                    : 'text-gray-600 hover:text-pink-500 hover:bg-gray-50'
                 }`}
               >
                 {link.label}
@@ -50,148 +66,61 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Auth Buttons / User Info - Desktop */}
+          {/* Auth Section */}
           <div className="hidden md:flex items-center space-x-4">
             {isAuthenticated ? (
-              <>
-                {/* Dashboard Button */}
-                {role === 'ADMIN' ? (
-                  <Link
-                    to="/admin/dashboard"
-                    className="flex items-center space-x-1 px-4 py-2 text-gray-700 hover:text-pink-600 transition-colors duration-200"
-                  >
-                    <FaHome />
-                    <span>Admin Panel</span>
-                  </Link>
-                ) : (
-                  <Link
-                    to="/user/dashboard"
-                    className="flex items-center space-x-1 px-4 py-2 text-gray-700 hover:text-pink-600 transition-colors duration-200"
-                  >
-                    <FaHome />
-                    <span>My Dashboard</span>
-                  </Link>
-                )}
-                {/* User Profile */}
-                <div className="flex items-center space-x-3 pl-4 border-l border-gray-300">
-                  <div className="text-right">
-                    <p className="font-semibold text-gray-800 text-sm">{user?.name}</p>
-                    <p className="text-xs text-gray-600">{role === 'ADMIN' ? 'Admin' : 'Customer'}</p>
-                  </div>
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center space-x-1 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  >
-                    <FaSignOutAlt />
-                    <span>Logout</span>
-                  </button>
+              <div className="flex items-center space-x-3 bg-gray-50 p-1 rounded-full border border-gray-100 pl-4">
+                <div className="text-right">
+                  <p className="font-bold text-gray-800 text-xs leading-none">{user?.name}</p>
+                  <p className="text-[10px] text-pink-500 font-bold uppercase">{role === 'ADMIN' ? 'Admin' : 'Customer'}</p>
                 </div>
-              </>
+                <button
+                  onClick={handleLogout}
+                  className="bg-white p-2 rounded-full shadow-sm text-red-500 hover:bg-red-500 hover:text-white transition-all"
+                >
+                  <FaSignOutAlt />
+                </button>
+              </div>
             ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="flex items-center space-x-1 px-4 py-2 text-gray-700 hover:text-pink-600 transition-colors duration-200"
-                >
-                  <FaSignInAlt />
-                  <span>Login</span>
+              <div className="flex items-center space-x-2">
+                <Link to="/login" className="px-5 py-2 text-gray-700 font-bold hover:text-pink-600 transition-colors">
+                  Login
                 </Link>
-                <Link
-                  to="/register"
-                  className="flex items-center space-x-1 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors duration-200 shadow-md hover:shadow-lg"
-                >
-                  <FaUser />
-                  <span>Register</span>
+                <Link to="/register" className="px-6 py-2.5 bg-pink-500 text-white rounded-full font-bold shadow-lg shadow-pink-100 hover:bg-pink-600 transition-all transform hover:-translate-y-0.5">
+                  Register
                 </Link>
-              </>
+              </div>
             )}
           </div>
 
-          {/* Mobile menu button */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 rounded-md text-gray-700 hover:text-pink-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-pink-500"
-            aria-label="Toggle menu"
-          >
+          {/* Mobile Menu Button */}
+          <button onClick={() => setIsOpen(!isOpen)} className="md:hidden p-2 text-gray-700 hover:bg-gray-50 rounded-lg">
             {isOpen ? <FaTimes className="text-2xl" /> : <FaBars className="text-2xl" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* Mobile Menu Dropdown */}
       {isOpen && (
-        <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-t">
+        <div className="md:hidden bg-white border-t border-pink-50 absolute w-full left-0 shadow-xl z-[101]">
+          <div className="px-4 py-6 space-y-4">
             {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                onClick={() => setIsOpen(false)}
-                className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
-                  isActive(link.path)
-                    ? 'text-pink-600 bg-pink-50'
-                    : 'text-gray-700 hover:text-pink-600 hover:bg-gray-50'
-                }`}
+              <Link 
+                key={link.path} 
+                to={link.path} 
+                onClick={() => setIsOpen(false)} 
+                className="block text-lg font-bold text-gray-800 hover:text-pink-600"
               >
                 {link.label}
               </Link>
             ))}
-
-            {isAuthenticated ? (
-              <>
-                <div className="border-t pt-3 mt-3">
-                  {role === 'ADMIN' ? (
-                    <Link
-                      to="/admin/dashboard"
-                      onClick={() => setIsOpen(false)}
-                      className="flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-pink-600 hover:bg-gray-50 transition-colors duration-200"
-                    >
-                      <FaHome />
-                      <span>Admin Panel</span>
-                    </Link>
-                  ) : (
-                    <Link
-                      to="/user/dashboard"
-                      onClick={() => setIsOpen(false)}
-                      className="flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-pink-600 hover:bg-gray-50 transition-colors duration-200"
-                    >
-                      <FaHome />
-                      <span>My Dashboard</span>
-                    </Link>
-                  )}
-                </div>
-                <div className="px-3 py-2 pt-3 border-t">
-                  <p className="font-semibold text-gray-800">{user?.name}</p>
-                  <p className="text-sm text-gray-600 mb-3">{role === 'ADMIN' ? 'Admin' : 'Customer'}</p>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
-                  >
-                    <FaSignOutAlt />
-                    <span>Logout</span>
-                  </button>
-                </div>
-              </>
-            ) : (
-              <div className="pt-4 space-y-2 border-t">
-                <Link
-                  to="/login"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-pink-600 hover:bg-gray-50 transition-colors duration-200"
-                >
-                  <FaSignInAlt />
-                  <span>Login</span>
+            <div className="pt-4 border-t border-gray-100">
+              {!isAuthenticated && (
+                <Link to="/register" onClick={() => setIsOpen(false)} className="block w-full py-3 bg-pink-500 text-white text-center rounded-xl font-bold shadow-lg">
+                  Register Now
                 </Link>
-                <Link
-                  to="/register"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium bg-pink-600 text-white hover:bg-pink-700 transition-colors"
-                >
-                  <FaUser />
-                  <span>Register</span>
-                </Link>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -200,4 +129,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-

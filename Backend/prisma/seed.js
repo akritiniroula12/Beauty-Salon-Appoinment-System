@@ -14,49 +14,43 @@ const services = [
     name: 'Hair Cut',
     description: 'Professional haircut service',
     duration: 30,
-    price: 25.00,
+    price: 2500,
   },
   {
     name: 'Hair Wash',
     description: 'Complete hair washing and conditioning',
-    duration: 20,
-    price: 15.00,
+    duration: 60,
+    price: 1400,
   },
   {
     name: 'Hair Coloring',
     description: 'Full hair coloring service',
-    duration: 90,
-    price: 80.00,
+    duration: 50,
+    price: 800,
   },
   {
-    name: 'Manicure',
-    description: 'Professional manicure service',
-    duration: 45,
-    price: 30.00,
-  },
-  {
-    name: 'Pedicure',
-    description: 'Professional pedicure service',
+    name: 'Manicure & Pedicure',
+    description: 'Professional manicure & pedicure service',
     duration: 60,
-    price: 40.00,
+    price: 3500,
   },
   {
     name: 'Facial Treatment',
     description: 'Relaxing facial treatment',
     duration: 60,
-    price: 50.00,
+    price: 5000,
   },
   {
     name: 'Massage',
     description: 'Full body massage therapy',
     duration: 90,
-    price: 70.00,
+    price: 7000,
   },
   {
     name: 'Eyebrow Shaping',
     description: 'Professional eyebrow shaping and threading',
     duration: 15,
-    price: 12.00,
+    price: 60,
   },
 ];
 
@@ -119,16 +113,30 @@ const staffMembers = [
 async function main() {
   console.log('🌱 Starting database seeding...\n');
 
+  // Clean up any old test services with wrong prices (e.g. 30 or 40)
+  console.log('🧹 Cleaning up invalid test services (price 30 or 40)...');
+  const deleted = await prisma.service.deleteMany({
+    where: {
+      price: { in: [30, 40] },
+    },
+  });
+  console.log(`🗑️ Removed ${deleted.count} invalid services\n`);
+
   // Seed Services
   console.log('📦 Seeding services...');
   for (const service of services) {
     await prisma.service.upsert({
       where: { name: service.name },
-      update: {},
+      // This ensures existing services get their price/duration/description updated
+      update: {
+        description: service.description,
+        duration: service.duration,
+        price: service.price,
+      },
       create: service,
     });
   }
-  console.log(`✅ ${services.length} services seeded\n`);
+  console.log(`✅ ${services.length} services seeded/updated\n`);
 
   // Seed Users
   console.log('👥 Seeding test users...');

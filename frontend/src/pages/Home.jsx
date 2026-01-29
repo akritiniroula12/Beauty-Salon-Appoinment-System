@@ -1,6 +1,19 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaSpinner, FaCalendarCheck, FaStar, FaUsers, FaArrowRight } from 'react-icons/fa';
+import { 
+  FaSpinner, 
+  FaCalendarCheck, 
+  FaStar, 
+  FaUsers, 
+  FaArrowRight, 
+  FaCheckCircle,
+  FaInstagram,
+  FaFacebookF,
+  FaWhatsapp,
+  FaMapMarkerAlt,
+  FaPhoneAlt 
+} from 'react-icons/fa';
+import heroModel from '../image/hero-model.png'; 
 import { servicesAPI } from '../services/api';
 
 const Home = () => {
@@ -11,7 +24,6 @@ const Home = () => {
     const fetchServices = async () => {
       try {
         const response = await servicesAPI.getServices();
-        // Get first 3 services for featured section
         setFeaturedServices(response.services.slice(0, 3));
       } catch (error) {
         console.error('Failed to fetch featured services:', error);
@@ -19,142 +31,176 @@ const Home = () => {
         setLoading(false);
       }
     };
-
     fetchServices();
   }, []);
 
-  const stats = [
-    { icon: FaUsers, number: '5000+', label: 'Happy Clients' },
-    { icon: FaStar, number: '4.9', label: 'Average Rating' },
-    { icon: FaCalendarCheck, number: '10000+', label: 'Appointments' },
-  ];
-
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-pink-500 via-pink-600 to-purple-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
-              Welcome to Beauty Salon
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 text-pink-100 max-w-3xl mx-auto">
-              Your one-stop destination for all beauty and wellness services. 
-              Book your appointment today and experience the luxury you deserve.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                to="/booking"
-                className="inline-flex items-center justify-center px-8 py-4 bg-white text-pink-600 rounded-lg font-semibold text-lg hover:bg-pink-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-              >
+      {/* 1. HERO SECTION */}
+      <section className="relative pt-12 pb-32 lg:pt-20 lg:pb-48 bg-[#fff1f5]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="order-2 lg:order-1 text-left">
+              <div className="flex items-center gap-3 mb-6">
+                <span className="w-10 h-[2px] bg-pink-500"></span>
+                <span className="text-pink-600 font-bold uppercase tracking-widest text-xs">Full Service Salon</span>
+              </div>
+              <h1 className="text-5xl md:text-6xl font-bold text-gray-900 leading-[1.1] mb-8">
+                Redefine Your <br /> 
+                <span className="text-pink-500 font-serif italic font-normal">Beauty & Style</span> <br />
+                From Head to Toe
+              </h1>
+              <ul className="space-y-4 mb-10 text-gray-700">
+                <li className="flex items-center gap-3 font-medium">
+                  <FaCheckCircle className="text-pink-500" /> Expert Hair Styling, Cutting & Color
+                </li>
+                <li className="flex items-center gap-3 font-medium">
+                  <FaCheckCircle className="text-pink-500" /> Premium Skin & Facial Treatments
+                </li>
+              </ul>
+              <Link to="/booking" className="px-10 py-4 bg-pink-500 text-white rounded-full font-bold shadow-xl shadow-pink-200 hover:bg-pink-600 transition-all inline-block hover:-translate-y-1">
                 Book Appointment
-                <FaArrowRight className="ml-2" />
               </Link>
-              <Link
-                to="/services"
-                className="inline-flex items-center justify-center px-8 py-4 bg-transparent border-2 border-white text-white rounded-lg font-semibold text-lg hover:bg-white hover:text-pink-600 transition-all duration-300"
-              >
-                View Services
-              </Link>
+            </div>
+
+            <div className="order-1 lg:order-2 flex justify-center">
+              <img 
+                src={heroModel} 
+                alt="Salon Services" 
+                className="w-full max-w-lg rounded-[2.5rem] shadow-2xl object-cover aspect-[4/3]" 
+              />
             </div>
           </div>
         </div>
-      </section>
 
-      {/* Stats Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {stats.map((stat, index) => (
-              <div
-                key={index}
-                className="text-center p-6 rounded-lg bg-gradient-to-br from-pink-50 to-purple-50 hover:shadow-lg transition-shadow duration-300"
-              >
-                <stat.icon className="text-4xl text-pink-600 mx-auto mb-4" />
-                <div className="text-4xl font-bold text-gray-800 mb-2">{stat.number}</div>
-                <div className="text-gray-600">{stat.label}</div>
-              </div>
-            ))}
-          </div>
+        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0]">
+          <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="relative block w-[100%] h-[100px] fill-white">
+            <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C58.47,112.49,123.39,110.13,182.39,95.8,241.39,81.46,282.39,64.91,321.39,56.44Z"></path>
+          </svg>
         </div>
       </section>
 
-      {/* Featured Services Section */}
-      <section className="py-16 bg-gray-50">
+      {/* 2. FEATURED SERVICES */}
+      <section className="py-24 bg-grey">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-              Our Featured Services
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4 tracking-tight">
+              Our <span className="text-gray-900">Signature</span> Services
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Discover our most popular services designed to make you look and feel your best
+            <p className="text-gray-500 max-w-2xl mx-auto">
+              Discover our most popular services designed to make you look and feel your best at Elora.
             </p>
           </div>
+
           {loading ? (
             <div className="flex justify-center items-center py-12">
               <FaSpinner className="animate-spin text-4xl text-pink-500" />
             </div>
-          ) : featuredServices.length > 0 ? (
+          ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {featuredServices.map((service) => (
-                <div
-                  key={service.id}
-                  className="bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
-                >
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                    {service.name}
-                  </h3>
-                  <p className="text-gray-600 mb-4 line-clamp-2">{service.description}</p>
-                  <div className="text-sm text-gray-500 mb-4">
-                    ${service.price} • {service.duration} min
+                <div key={service.id} className="group bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-[0_20px_50px_rgba(236,72,153,0.12)] transition-all duration-500 transform hover:-translate-y-2 flex flex-col h-full">
+                  <div className="flex-grow">
+                    <h3 className="text-2xl font-bold text-gray-800 mb-3 group-hover:text-pink-600 transition-colors uppercase tracking-tight">
+                      {service.name}
+                    </h3>
+                    <p className="text-gray-500 mb-6 leading-relaxed line-clamp-3 italic">
+                      {service.description}
+                    </p>
+                    <div className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+                      <span className="text-pink-500">Rs. {service.price}</span>
+                      <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                      <span>{service.duration} MIN</span>
+                    </div>
                   </div>
-                  <Link
-                    to="/services"
-                    className="block text-center text-pink-600 font-semibold hover:text-pink-700 transition-colors duration-200"
-                  >
-                    Learn More →
+                  <Link to="/services" className="inline-flex items-center text-pink-600 font-bold hover:text-pink-700 transition-all border-t border-gray-50 pt-6 group-hover:gap-3 gap-2">
+                    Learn More <FaArrowRight className="text-xs" />
                   </Link>
                 </div>
               ))}
             </div>
-          ) : (
-            <div className="text-center py-12 text-gray-600">
-              <p>No services available</p>
-            </div>
           )}
-          <div className="text-center mt-12">
-            <Link
-              to="/services"
-              className="inline-flex items-center px-6 py-3 bg-pink-600 text-white rounded-lg font-semibold hover:bg-pink-700 transition-colors duration-200 shadow-md hover:shadow-lg"
-            >
-              View All Services
-              <FaArrowRight className="ml-2" />
+          <div className="text-center mt-16">
+            <Link to="/services" className="px-10 py-4 bg-pink-500 text-white rounded-full font-bold shadow-lg shadow-pink-100 hover:bg-pink-600 transition-all inline-flex items-center gap-2">
+              View All Services <FaArrowRight />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-pink-500 to-purple-600 text-white">
+      {/* 3. LIGHT NEUTRAL CTA */}
+      <section className="py-24 bg-[#FAF9F6] border-y border-neutral-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Ready to Transform Your Look?
+          <div className="mb-6 flex justify-center items-center gap-4">
+            <span className="h-px w-12 bg-neutral-300"></span>
+            <span className="text-neutral-400 uppercase tracking-[0.3em] text-xs font-bold">Your Invitation</span>
+            <span className="h-px w-12 bg-neutral-300"></span>
+          </div>
+          <h2 className="text-4xl md:text-4xl font-bold text-neutral-800 mb-6 tracking-tight">
+            Ready to <span className="text-pink-500 font-serif italic font-normal">Transform</span> Your Look?
           </h2>
-          <p className="text-xl mb-8 text-pink-100">
-            Book your appointment now and experience the best beauty services in town
+          <p className="text-lg mb-10 text-neutral-500 max-w-2xl mx-auto leading-relaxed">
+            Experience the perfect blend of luxury and expertise. Book your exclusive session at Elora today.
           </p>
-          <Link
-            to="/booking"
-            className="inline-flex items-center px-8 py-4 bg-white text-pink-600 rounded-lg font-semibold text-lg hover:bg-pink-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-          >
-            <FaCalendarCheck className="mr-2" />
-            Book Now
+          <Link to="/booking" className="inline-flex items-center px-10 py-4 bg-pink-500 text-white rounded-full font-bold text-lg hover:bg-pink-600 transition-all duration-300 shadow-xl shadow-pink-200 hover:-translate-y-1">
+            <FaCalendarCheck className="mr-3" />
+            Book Your Session
           </Link>
         </div>
       </section>
+
+      {/* 4. COMPACT MINIMAL DARK FOOTER */}
+<footer className="bg-neutral-900text-white py-3">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    {/* Changed to grid-cols-3 to give each section equal width. 
+        This eliminates the "gap" by distributing space mathematically.
+    */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-12 border-b border-white/10 pb-8">
+      
+      {/* 1. Brand Section */}
+      <div className="flex flex-col items-center md:items-start text-center md:text-left">
+        <h3 className="text-xl font-light tracking-[0.3em] uppercase mb-1">Elora</h3>
+        <p className="text-pink-500 font-bold text-[10px] tracking-[0.5em] uppercase mb-4">Hair & Skin</p>
+        <p className="text-gray-400 text-xs leading-relaxed max-w-[200px]">
+          Expert beauty services delivered with precision and luxury.
+        </p>
+      </div>
+
+      {/* 2. Navigation - Centered to fill the middle gap */}
+      <div className="flex flex-col items-center">
+        <h4 className="text-xs font-light tracking-[0.3em] uppercase mb-4">Navigation</h4>
+        <ul className="text-gray-400 text-xs space-y-2 text-center">
+          <li><Link to="/" className="hover:text-pink-500 transition-colors">Home</Link></li>
+          <li><Link to="/services" className="hover:text-pink-500 transition-colors">Services</Link></li>
+          <li><Link to="/booking" className="hover:text-pink-500 transition-colors">Book Now</Link></li>
+        </ul>
+      </div>
+
+      {/* 3. Contact - Right Aligned to close the right-side gap */}
+      <div className="flex flex-col items-center md:items-end text-center md:text-right">
+        <h4 className="text-xs font-bold uppercase tracking-widest text-white mb-4">Contact</h4>
+        <ul className="text-gray-400 text-xs space-y-2">
+          <li className="hover:text-pink-500 transition-colors">9876543211</li>
+          <li className="hover:text-pink-500 transition-colors italic lowercase">elorahairandskin@gmail.com</li>
+        </ul>
+      </div>
+    </div>
+
+    {/* Copyright Bar */}
+    <div className="pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+      <p className="text-[10px] text-gray-500 uppercase tracking-[0.4em]">
+        © 2026 ELORA HAIR & SKIN • CRAFTED FOR EXCELLENCE
+      </p>
+      <div className="flex gap-6">
+         <a href="#" className="text-gray-500 hover:text-white transition-colors"><FaInstagram size={18}/></a>
+         <a href="#" className="text-gray-500 hover:text-white transition-colors"><FaFacebookF size={18}/></a>
+         <a href="#" className="text-gray-500 hover:text-white transition-colors"><FaWhatsapp size={18}/></a>
+      </div>
+    </div>
+  </div>
+</footer>
     </div>
   );
 };
 
 export default Home;
-
