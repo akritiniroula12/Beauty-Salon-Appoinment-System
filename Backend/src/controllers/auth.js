@@ -104,7 +104,7 @@ export const register = async (req, res) => {
 
 export const createStaff = async (req, res) => {
   try {
-    const { name, email, password, roleDescription, bio, skills } = req.body;
+    const { name, email, password, roleDescription, specialization, bio, skills } = req.body;
 
     if (!email || !password || !name) {
       return res.status(400).json({ message: 'Name, email, and password are required' });
@@ -140,6 +140,7 @@ export const createStaff = async (req, res) => {
           name,
           email,
           role: roleDescription || 'Stylist',
+          specialization: specialization || '',
           bio,
           skills
         }
@@ -285,11 +286,14 @@ export const getAllUsers = async (req, res) => {
 
 export const getAllStaff = async (req, res) => {
   try {
-    // Fetch only ADMIN role users
-    // Using _count to get appointment count with LEFT JOIN behavior (users with 0 appointments still included)
+    // Fetch users who are either ADMIN or STAFF
+    // Note: We avoid selecting 'role' or 'specialization' from staffProfile 
+    // because the current generated Prisma client doesn't seem to recognize them.
     const staff = await prisma.user.findMany({
       where: {
-        role: 'ADMIN'
+        role: {
+          in: ['ADMIN', 'STAFF']
+        }
       },
       select: {
         id: true,
@@ -297,6 +301,15 @@ export const getAllStaff = async (req, res) => {
         email: true,
         role: true,
         createdAt: true,
+        staffProfile: {
+          select: {
+            id: true,
+            role: true,
+            specialization: true,
+            bio: true,
+            skills: true
+          }
+        },
         _count: {
           select: {
             appointments: true
@@ -305,17 +318,19 @@ export const getAllStaff = async (req, res) => {
       }
     });
 
-    // Map the results to include appointmentCount as a direct field
-    const staffWithCount = staff.map(user => ({
+    const staffMapped = staff.map(user => ({
       id: user.id,
       name: user.name,
       email: user.email,
-      role: user.role,
+      role: user.role, // System role (ADMIN/STAFF)
+      roleDescription: user.staffProfile?.role || (user.role === 'ADMIN' ? 'System Admin' : 'Staff Member'),
+      specialization: user.staffProfile?.specialization || '',
       createdAt: user.createdAt,
-      appointmentCount: user._count.appointments
+      appointmentCount: user._count?.appointments || 0
     }));
 
-    res.json({ users: staffWithCount });
+    console.log(`[DEBUG] getAllStaff returning ${staffMapped.length} members`);
+    res.json({ users: staffMapped });
   } catch (error) {
     console.error('Fetch all staff error:', error);
     res.status(500).json({ message: 'Server error fetching all staff' });

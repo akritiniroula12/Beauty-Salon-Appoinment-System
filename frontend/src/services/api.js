@@ -137,6 +137,11 @@ export const appointmentsAPI = {
     return response.data;
   },
 
+  updateAppointmentStatus: async (id, status) => {
+    const response = await apiClient.put(`/appointments/admin/${id}/status`, { status });
+    return response.data;
+  },
+
   // You might also want a way to delete/cancel appointments here
   deleteAppointment: async (id) => {
     const response = await apiClient.delete(`/appointments/${id}`);

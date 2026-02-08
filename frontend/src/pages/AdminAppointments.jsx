@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { appointmentsAPI } from '../services/api';
 import AdminSidebar from '../components/AdminSidebar';
 // 1. ADD CheckCircle HERE
-import { Search, CheckCircle } from 'lucide-react'; 
+import { Search, CheckCircle } from 'lucide-react';
 
 const AdminAppointments = () => {
   const [appointments, setAppointments] = useState([]);
@@ -36,7 +36,7 @@ const AdminAppointments = () => {
     fetchAll();
   }, []);
 
-  const filteredAppointments = appointments.filter(app => 
+  const filteredAppointments = appointments.filter(app =>
     app.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     app.service?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -46,7 +46,7 @@ const AdminAppointments = () => {
   return (
     <div className="flex h-screen w-full overflow-hidden bg-[#F9FAFB]">
       <AdminSidebar />
-      
+
       <main className="flex-1 h-full overflow-y-auto p-8 lg:p-12">
         <header className="flex flex-col md:flex-row md:items-center justify-between bg-white rounded-2xl shadow-sm p-8 mb-10 border border-gray-50">
           <div>
@@ -56,7 +56,7 @@ const AdminAppointments = () => {
           <div className="mt-4 md:mt-0 flex items-center space-x-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-              <input 
+              <input
                 type="text"
                 placeholder="Search bookings..."
                 className="pl-10 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-pink-100 transition-all w-64"
@@ -97,35 +97,35 @@ const AdminAppointments = () => {
                       {app.appointmentDate ? new Date(app.appointmentDate).toLocaleDateString() : 'N/A'}
                     </td>
                     <td className="px-8 py-5 text-center">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                        app.status === 'CONFIRMED' 
-                          ? 'bg-green-50 text-green-600 border-green-100' 
-                          : app.status === 'COMPLETED'
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${app.status === 'CONFIRMED'
+                        ? 'bg-green-50 text-green-600 border-green-100'
+                        : app.status === 'COMPLETED'
                           ? 'bg-blue-50 text-blue-600 border-blue-100'
-                          : 'bg-yellow-50 text-yellow-600 border-yellow-100'
-                      }`}>
+                          : app.status === 'CANCELLED'
+                            ? 'bg-red-50 text-red-600 border-red-100'
+                            : 'bg-yellow-50 text-yellow-600 border-yellow-100'
+                        }`}>
                         {app.status || 'PENDING'}
                       </span>
                     </td>
-                    <td className="px-8 py-5 text-right flex justify-end space-x-2">
-                      {app.status === 'PENDING' && (
-                        <button 
-                          onClick={() => handleUpdateStatus(app._id, 'CONFIRMED')}
-                          className="p-2 text-gray-400 hover:text-green-500 transition-colors"
-                          title="Confirm"
-                        >
-                          <CheckCircle size={18} />
-                        </button>
-                      )}
-                      {app.status === 'CONFIRMED' && (
-                        <button 
-                          onClick={() => handleUpdateStatus(app._id, 'COMPLETED')}
-                          className="p-2 text-gray-400 hover:text-blue-500 transition-colors"
-                          title="Complete"
-                        >
-                          <CheckCircle size={18} className="text-blue-500" />
-                        </button>
-                      )}
+                    <td className="px-8 py-5 text-right">
+                      <select
+                        value={app.status || 'PENDING'}
+                        onChange={(e) => handleUpdateStatus(app._id || app.id, e.target.value)}
+                        className={`text-xs font-bold py-1 px-2 rounded-lg border focus:outline-none transition-all ${app.status === 'CONFIRMED'
+                          ? 'bg-green-50 text-green-600 border-green-100'
+                          : app.status === 'COMPLETED'
+                            ? 'bg-blue-50 text-blue-600 border-blue-100'
+                            : app.status === 'CANCELLED'
+                              ? 'bg-red-50 text-red-600 border-red-100'
+                              : 'bg-yellow-50 text-yellow-600 border-yellow-100'
+                          }`}
+                      >
+                        <option value="PENDING">PENDING</option>
+                        <option value="CONFIRMED">CONFIRMED</option>
+                        <option value="COMPLETED">COMPLETED</option>
+                        <option value="CANCELLED">CANCELLED</option>
+                      </select>
                     </td>
                   </tr>
                 ))}

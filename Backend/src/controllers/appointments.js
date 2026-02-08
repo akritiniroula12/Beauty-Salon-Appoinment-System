@@ -101,3 +101,25 @@ export const getAdminAppointments = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+export const updateAppointmentStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const allowed = ['PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED'];
+    if (!allowed.includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
+
+    const updated = await prisma.appointment.update({
+      where: { id: parseInt(id) },
+      data: { status }
+    });
+
+    res.json({ message: 'Status updated', appointment: updated });
+  } catch (error) {
+    console.error('Admin Update Status error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};

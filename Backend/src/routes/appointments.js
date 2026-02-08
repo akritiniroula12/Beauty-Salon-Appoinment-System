@@ -1,11 +1,12 @@
 import express from 'express';
 // We must include getAdminAppointments in this list
-import { 
-  createAppointment, 
-  getUserAppointments, 
-  getAdminAppointments 
+import {
+  createAppointment,
+  getUserAppointments,
+  getAdminAppointments,
+  updateAppointmentStatus
 } from '../controllers/appointments.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticateToken, authorizeRoles } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -20,6 +21,9 @@ router.get('/', getUserAppointments);
 
 // 3. NEW Route for Admin to see ALL 10 bookings (Current path: /api/appointments/admin)
 // This is the one that will show 10, 11, 12, etc.
-router.get('/admin', getAdminAppointments);
+router.get('/admin', authorizeRoles('ADMIN'), getAdminAppointments);
+
+// 4. NEW Route for Admin to update status (Current path: /api/appointments/admin/:id/status)
+router.put('/admin/:id/status', authorizeRoles('ADMIN'), updateAppointmentStatus);
 
 export default router;
