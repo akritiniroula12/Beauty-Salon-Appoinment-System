@@ -13,6 +13,7 @@ model User {
   password     String        @db.VarChar(255)
   isActive     Boolean       @default(true)
   role         Role          @default(CUSTOMER)
+  staffProfile Staff?
   appointments Appointment[]
   reviews      Review[]
   createdAt    DateTime      @default(now())
@@ -21,9 +22,15 @@ model User {
 
 model Staff {
   id           Int           @id @default(autoincrement())
+  user         User?         @relation(fields: [userId], references: [id])
+  userId       Int?          @unique
   name         String
   email        String        @unique
   role         String        // e.g., Stylist, Manager
+  specialization String?     @db.VarChar(100)
+  bio          String?       @db.Text
+  skills       String?       @db.Text // Comma separated skills
+  availability Json?         // Store working hours as JSON
   isActive     Boolean       @default(true)
   appointments Appointment[]
   createdAt    DateTime      @default(now())
@@ -36,7 +43,7 @@ model Service {
   description  String?
   duration     Int           // in minutes
   price        Float
- image        String?       @db.Text
+  image        String?       @db.Text
   appointments Appointment[]
   reviews      Review[]
   createdAt    DateTime      @default(now())
@@ -73,12 +80,14 @@ model Review {
 enum Role {
   CUSTOMER
   ADMIN
+  STAFF
 }
 
 enum AppointmentStatus {
   PENDING
   CONFIRMED
   CANCELLED
+  COMPLETED
 }
 
 enum PaymentStatus {

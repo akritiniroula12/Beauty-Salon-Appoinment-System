@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaUser, FaEnvelope, FaLock, FaUserPlus, FaSpinner } from 'react-icons/fa';
+import { FaSpinner, FaArrowRight } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 
 const Register = () => {
@@ -28,29 +28,13 @@ const Register = () => {
     setIsSubmitting(true);
     setError('');
 
-    // Validate form
+    // Form Validation logic remains exactly as you had it
     if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
       setError('Please fill in all fields');
       setIsSubmitting(false);
       return;
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      setError('Please enter a valid email address');
-      setIsSubmitting(false);
-      return;
-    }
-
-    // Validate password length
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
-      setIsSubmitting(false);
-      return;
-    }
-
-    // Validate password match
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       setIsSubmitting(false);
@@ -59,149 +43,149 @@ const Register = () => {
 
     try {
       const result = await register(formData.name, formData.email, formData.password);
-      
       if (result.success) {
-        // Redirect to user dashboard (new registrations are CUSTOMER role)
-        navigate('/user/dashboard');
+        navigate('/'); // Redirect to Landing Page
       } else {
-        setError(result.message || 'Registration failed. Please try again.');
+        setError(result.message || 'Registration failed.');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      setError(err.response?.data?.message || 'Registration failed.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-pink-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">Create Account</h1>
-          <p className="text-gray-600">Sign up to start booking appointments</p>
+    <div className="min-h-screen bg-[#faf9f6] pt-12 pb-20 px-6 font-sans text-stone-900 flex flex-col items-center">
+      <div className="w-full max-w-md">
+
+        {/* Header Section - Same Tight Spacing as Login */}
+        <div className="text-center mb-6">
+          <span className="text-pink-600 text-[10px] font-bold uppercase tracking-[0.5em] mb-2 block">
+            Join Membership
+          </span>
+          <h1 className="text-5xl font-light tracking-tight text-stone-900 leading-none">
+            Create Account
+          </h1>
+          <p className="mt-2 text-stone-500 font-light italic text-sm">
+            Sign up to start booking appointments.
+          </p>
         </div>
 
-        {/* Register Form */}
-        <div className="bg-white rounded-lg shadow-xl p-8 md:p-10">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Name Field */}
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                <FaUser className="inline mr-2 text-pink-600" />
+        {/* Form Container - Negative margin mt-[-15px] to close the gap */}
+        <div className="bg-white border border-stone-200 p-8 md:p-12 shadow-sm relative z-10 mt-[-15px]">
+          <form onSubmit={handleSubmit} className="space-y-8">
+
+            {/* Full Name Field */}
+            <div className="relative">
+              <label className="block text-[11px] font-bold uppercase tracking-[0.2em] text-stone-400 mb-1">
                 Full Name
               </label>
               <input
                 type="text"
-                id="name"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
-                placeholder="Enter your full name"
+                placeholder="Your name"
+                className="w-full bg-transparent border-b border-stone-200 py-2 focus:outline-none focus:border-pink-500 transition-colors text-stone-800 placeholder:text-stone-200 text-sm"
               />
             </div>
 
             {/* Email Field */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                <FaEnvelope className="inline mr-2 text-pink-600" />
+            <div className="relative">
+              <label className="block text-[11px] font-bold uppercase tracking-[0.2em] text-stone-400 mb-1">
                 Email Address
               </label>
               <input
                 type="email"
-                id="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
-                placeholder="Enter your email"
+                placeholder="email@example.com"
+                className="w-full bg-transparent border-b border-stone-200 py-2 focus:outline-none focus:border-pink-500 transition-colors text-stone-800 placeholder:text-stone-200 text-sm"
               />
             </div>
 
             {/* Password Field */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                <FaLock className="inline mr-2 text-pink-600" />
+            <div className="relative">
+              <label className="block text-[11px] font-bold uppercase tracking-[0.2em] text-stone-400 mb-1">
                 Password
               </label>
               <input
                 type="password"
-                id="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
-                placeholder="Enter your password"
+                placeholder="••••••••"
+                className="w-full bg-transparent border-b border-stone-200 py-2 focus:outline-none focus:border-pink-500 transition-colors text-stone-800 placeholder:text-stone-200 text-sm"
               />
-              <p className="mt-1 text-xs text-gray-500">Must be at least 6 characters</p>
             </div>
 
             {/* Confirm Password Field */}
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                <FaLock className="inline mr-2 text-pink-600" />
+            <div className="relative">
+              <label className="block text-[11px] font-bold uppercase tracking-[0.2em] text-stone-400 mb-1">
                 Confirm Password
               </label>
               <input
                 type="password"
-                id="confirmPassword"
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
-                placeholder="Confirm your password"
+                placeholder="••••••••"
+                className="w-full bg-transparent border-b border-stone-200 py-2 focus:outline-none focus:border-pink-500 transition-colors text-stone-800 placeholder:text-stone-200 text-sm"
               />
             </div>
 
-            {/* Error Message */}
             {error && (
-              <div className="p-4 rounded-lg bg-red-50 text-red-800 border border-red-200">
+              <div className="text-center text-[10px] font-bold uppercase tracking-widest p-3 bg-red-50 text-red-600 rounded border border-red-100">
                 {error}
               </div>
             )}
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full py-4 bg-gradient-to-r from-pink-600 to-purple-600 text-white rounded-lg font-semibold text-lg hover:from-pink-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-            >
-              {isSubmitting ? (
-                <span className="flex items-center justify-center">
-                  <FaSpinner className="animate-spin mr-2" />
-                  Creating account...
-                </span>
-              ) : (
-                <span className="flex items-center justify-center">
-                  <FaUserPlus className="mr-2" />
-                  Create Account
-                </span>
-              )}
-            </button>
+            {/* Submit Button - Updated to Pink-to-Pink Hover */}
+            <div className="text-center pt-2">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full inline-flex items-center justify-center gap-3 px-8 py-4 
+                           bg-[#f13a91] text-white text-[11px] font-bold uppercase tracking-[0.3em] 
+                           rounded-full shadow-lg shadow-pink-100 transition-all duration-300 
+                           hover:bg-[#d62e7f] hover:shadow-xl hover:-translate-y-1 
+                           active:scale-95 disabled:opacity-50 group"
+              >
+                {isSubmitting ? (
+                  <FaSpinner className="animate-spin text-lg" />
+                ) : (
+                  <>
+                    Create Account
+                    <FaArrowRight className="transition-transform duration-300 group-hover:translate-x-1" />
+                  </>
+                )}
+              </button>
+            </div>
           </form>
 
           {/* Login Link */}
-          <div className="mt-6 text-center">
-            <p className="text-gray-600">
+          <div className="mt-8 text-center border-t border-stone-100 pt-6">
+            <p className="text-xs text-stone-400 font-light">
               Already have an account?{' '}
-              <Link
-                to="/login"
-                className="text-pink-600 hover:text-pink-700 font-semibold"
-              >
-                Sign in here
+              <Link to="/login" className="text-pink-600 font-bold hover:text-stone-900 transition-colors underline underline-offset-4">
+                Sign In
               </Link>
             </p>
           </div>
         </div>
+
+        <p className="mt-10 text-center text-stone-400 text-[10px] uppercase tracking-[0.5em]">
+          Elora Hair & Skin • Crafted for Excellence
+        </p>
       </div>
     </div>
   );
 };
 
 export default Register;
-

@@ -62,6 +62,13 @@ const testUsers = [
     role: 'ADMIN',
   },
   {
+  name: 'Test Staff',
+  email: 'staff@beautysalon.com',
+  password: 'Staff@123',
+  role: 'STAFF',
+},
+
+  {
     name: 'Sarah Johnson',
     email: 'sarah@example.com',
     password: 'Sarah@123',

@@ -15,8 +15,20 @@ export const authenticateToken = (req, res, next) => {
       return res.status(403).json({ message: 'Invalid or expired token' });
     }
     req.user = user;
+    // Optional: If token doesn't have role, we might want to fetch it, but let's assume token has it after we fix login.
     next();
   });
+};
+
+export const authorizeRoles = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({
+        message: `Role (${req.user?.role}) is not allowed to access this resource`
+      });
+    }
+    next();
+  };
 };
 
 

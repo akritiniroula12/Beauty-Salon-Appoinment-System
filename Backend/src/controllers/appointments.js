@@ -74,3 +74,30 @@ export const getUserAppointments = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+// --- NEW CODE ADDED BELOW FOR ADMIN DASHBOARD ---
+
+export const getAdminAppointments = async (req, res) => {
+  try {
+    // This grabs ALL appointments from MySQL for the Admin
+    const appointments = await prisma.appointment.findMany({
+      include: {
+        user: {
+          select: { name: true, email: true } // This grabs the customer's name (Akriti, etc.)
+        },
+        service: {
+          select: { name: true, price: true }
+        },
+        staff: {
+          select: { name: true }
+        },
+      },
+      orderBy: { appointmentDate: 'desc' },
+    });
+
+    res.json({ appointments });
+  } catch (error) {
+    console.error('Admin Fetch Appointments error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};

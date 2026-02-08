@@ -20,8 +20,9 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     const storedRole = localStorage.getItem('role');
+    const storedToken = localStorage.getItem('token');
 
-    if (storedUser && storedRole) {
+    if (storedToken && storedUser && storedRole) {
       setUser(JSON.parse(storedUser));
       setRole(storedRole);
     }
@@ -29,25 +30,38 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Real login with backend API
-  const login = async (email, password, selectedRole) => {
+  const login = async (email, password) => {
     try {
       const response = await authAPI.login({ email, password });
-      
+
       if (response.token && response.user) {
         localStorage.setItem('token', response.token);
         localStorage.setItem('user', JSON.stringify(response.user));
-        localStorage.setItem('role', response.user.role); // Use role from API
-        
+        // Ensure role is stored. Fallback to 'CUSTOMER' if undefined, though backend should send it.
+        const userRole = response.user.role || 'CUSTOMER';
+        localStorage.setItem('role', userRole);
+
         setUser(response.user);
-        setRole(response.user.role); // Use role from API
-        
+        setRole(userRole);
+
         return { success: true, user: response.user };
       } else {
         return { success: false, message: 'Invalid response from server' };
       }
     } catch (error) {
-      const message = error.response?.data?.message || 'Login failed';
-      return { success: false, message };
+      console.error('Login API error:', error);
+      // Better error handling
+      if (error.response) {
+        // Server responded with error status
+        const message = error.response.data?.message || 'Login failed';
+        return { success: false, message };
+      } else if (error.request) {
+        // Request was made but no response received
+        return { success: false, message: 'Cannot connect to server. Please make sure the backend is running on port 5000.' };
+      } else {
+        // Something else happened
+        return { success: false, message: error.message || 'Login failed' };
+      }
     }
   };
 
@@ -55,15 +69,17 @@ export const AuthProvider = ({ children }) => {
   const register = async (name, email, password) => {
     try {
       const response = await authAPI.register({ name, email, password });
-      
+
       if (response.token && response.user) {
         localStorage.setItem('token', response.token);
         localStorage.setItem('user', JSON.stringify(response.user));
-        localStorage.setItem('role', response.user.role);
-        
+        // Default to CUSTOMER for new registrations
+        const userRole = response.user.role || 'CUSTOMER';
+        localStorage.setItem('role', userRole);
+
         setUser(response.user);
-        setRole(response.user.role); // Register returns CUSTOMER role by default
-        
+        setRole(userRole);
+
         return { success: true, user: response.user };
       } else {
         return { success: false, message: 'Invalid response from server' };
@@ -75,10 +91,22 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
+    // Clear user state immediately
     setUser(null);
     setRole(null);
+
+    // Clear all localStorage items
+    localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('role');
+
+    // Force navigation to homepage with full page reload
+    window.location.href = '/';
+  };
+
+  const updateUser = (updatedUser) => {
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
   };
 
   const value = {
@@ -87,6 +115,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    updateUser,
     isAuthenticated: !!user && !!role,
     loading,
   };

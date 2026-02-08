@@ -427,7 +427,6 @@
     flex-direction: row;
     flex-wrap: wrap;
   }
-
   .admin-nav-link {
     flex: 1 1 45%;
     justify-content: center;

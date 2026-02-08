@@ -28,15 +28,15 @@ const Navbar = () => {
     <nav className="bg-white sticky top-0 z-[100] border-b border-pink-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
-          
+
           {/* Logo & Brand Name */}
           <Link to="/" className="flex items-center group">
             <div className="relative">
               <div className="absolute inset-0 bg-yellow-200 blur-2xl opacity-0 group-hover:opacity-30 transition-opacity rounded-full"></div>
-              <img 
-                src={logoImg} 
-                alt="Elora Logo" 
-                className="h-16 w-auto object-contain relative z-10 transition-transform duration-500 group-hover:scale-105" 
+              <img
+                src={logoImg}
+                alt="Elora Logo"
+                className="h-16 w-auto object-contain relative z-10 transition-transform duration-500 group-hover:scale-105"
               />
             </div>
             <div className="ml-4 flex flex-col border-l border-gray-100 pl-4">
@@ -55,11 +55,10 @@ const Navbar = () => {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
-                  isActive(link.path)
+                className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${isActive(link.path)
                     ? 'text-pink-600 bg-pink-50'
                     : 'text-gray-600 hover:text-pink-500 hover:bg-gray-50'
-                }`}
+                  }`}
               >
                 {link.label}
               </Link>
@@ -71,12 +70,18 @@ const Navbar = () => {
             {isAuthenticated ? (
               <div className="flex items-center space-x-3 bg-gray-50 p-1 rounded-full border border-gray-100 pl-4">
                 <div className="text-right">
-                  <p className="font-bold text-gray-800 text-xs leading-none">{user?.name}</p>
-                  <p className="text-[10px] text-pink-500 font-bold uppercase">{role === 'ADMIN' ? 'Admin' : 'Customer'}</p>
+                  <p className="font-bold text-gray-800 text-xs leading-none">Hi, {user?.name}</p>
+                  <Link
+                    to={role === 'ADMIN' ? '/admin/dashboard' : role === 'STAFF' ? '/staff/dashboard' : '/user/dashboard'}
+                    className="text-[10px] text-pink-500 font-bold uppercase hover:underline"
+                  >
+                    Go to Dashboard
+                  </Link>
                 </div>
                 <button
                   onClick={handleLogout}
                   className="bg-white p-2 rounded-full shadow-sm text-red-500 hover:bg-red-500 hover:text-white transition-all"
+                  title="Logout"
                 >
                   <FaSignOutAlt />
                 </button>
@@ -105,10 +110,10 @@ const Navbar = () => {
         <div className="md:hidden bg-white border-t border-pink-50 absolute w-full left-0 shadow-xl z-[101]">
           <div className="px-4 py-6 space-y-4">
             {navLinks.map((link) => (
-              <Link 
-                key={link.path} 
-                to={link.path} 
-                onClick={() => setIsOpen(false)} 
+              <Link
+                key={link.path}
+                to={link.path}
+                onClick={() => setIsOpen(false)}
                 className="block text-lg font-bold text-gray-800 hover:text-pink-600"
               >
                 {link.label}

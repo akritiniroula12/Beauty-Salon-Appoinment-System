@@ -59,6 +59,65 @@ export const authAPI = {
     const response = await apiClient.get('/auth/me');
     return response.data;
   },
+
+  getAllUsers: async () => {
+    const response = await apiClient.get('/auth/all');
+    return response.data;
+  },
+
+  getAllStaff: async () => {
+    const response = await apiClient.get('/auth/staff');
+    return response.data;
+  },
+
+  // --- DELETE FUNCTION ADDED HERE ---
+  deleteUser: async (id) => {
+    const response = await apiClient.delete(`/auth/users/${id}`);
+    return response.data;
+  },
+
+  // OPTIONAL: Update user role or info
+  updateUser: async (id, data) => {
+    const response = await apiClient.put(`/auth/users/${id}`, data);
+    return response.data;
+  },
+
+  createStaff: async (data) => {
+    const response = await apiClient.post('/auth/staff/create', data);
+    return response.data;
+  }
+};
+
+// Staff API calls
+export const staffAPI = {
+  getDashboardStats: async () => {
+    const response = await apiClient.get('/staff/dashboard');
+    return response.data;
+  },
+  getAppointments: async () => {
+    const response = await apiClient.get('/staff/appointments');
+    return response.data;
+  },
+  updateAppointmentStatus: async (id, status) => {
+    const response = await apiClient.put(`/staff/appointments/${id}/status`, { status });
+    return response.data;
+  },
+  getAvailability: async () => {
+    const response = await apiClient.get('/staff/availability');
+    return response.data;
+  },
+  updateAvailability: async (availability) => {
+    const response = await apiClient.post('/staff/availability', { availability });
+    return response.data;
+  },
+  updateProfile: async (data) => {
+    const response = await apiClient.put('/staff/profile', data);
+    return response.data;
+  },
+  getProfile: async () => {
+    const response = await apiClient.get('/staff/profile');
+    return response.data;
+  }
 };
 
 // Appointments API calls
@@ -72,6 +131,17 @@ export const appointmentsAPI = {
     const response = await apiClient.get('/appointments');
     return response.data;
   },
+
+  getAdminAppointments: async () => {
+    const response = await apiClient.get('/appointments/admin');
+    return response.data;
+  },
+
+  // You might also want a way to delete/cancel appointments here
+  deleteAppointment: async (id) => {
+    const response = await apiClient.delete(`/appointments/${id}`);
+    return response.data;
+  }
 };
 
 // Services API calls
@@ -83,6 +153,16 @@ export const servicesAPI = {
 
   getServiceById: async (id) => {
     const response = await apiClient.get(`/services/${id}`);
+    return response.data;
+  },
+
+  createService: async (data) => {
+    const response = await apiClient.post('/services', data);
+    return response.data;
+  },
+
+  deleteService: async (id) => {
+    const response = await apiClient.delete(`/services/${id}`);
     return response.data;
   },
 };

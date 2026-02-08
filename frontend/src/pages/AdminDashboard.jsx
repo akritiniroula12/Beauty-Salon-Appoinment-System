@@ -1,46 +1,51 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaUsers, FaCalendarCheck, FaCog, FaSignOutAlt, FaChartBar, FaPhone } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
-import { appointmentsAPI, servicesAPI } from '../services/api';
+import AdminSidebar from '../components/AdminSidebar';
+import { appointmentsAPI, servicesAPI, authAPI } from '../services/api';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const { user, role, logout } = useAuth();
+  const { user } = useAuth();
   const [stats, setStats] = useState({
     totalAppointments: 0,
     totalUsers: 0,
     totalServices: 0,
+    totalRevenue: 0,
   });
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Redirect if not admin
-  useEffect(() => {
-    if (!user) {
-      // User data not loaded yet, wait
-      return;
-    }
-    if (role !== 'ADMIN') {
-      // Not an admin, redirect to home or user dashboard
-      navigate('/user/dashboard');
-    }
-  }, [role, user, navigate]);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Fetch services to get stats
-        const servicesResponse = await servicesAPI.getServices();
-        setStats(prev => ({
-          ...prev,
-          totalServices: servicesResponse.services.length,
-        }));
+        const [servicesRes, appointmentsRes, usersRes] = await Promise.all([
+          servicesAPI.getServices(),
+          appointmentsAPI.getAdminAppointments(),
+          authAPI.getAllUsers()
+        ]);
+
+        const confirmedAppointments = appointmentsRes.appointments || [];
+        const totalRevenue = confirmedAppointments
+          .filter(apt => apt.status === 'CONFIRMED')
+          .reduce((sum, apt) => {
+            const price = apt.service?.price || 0;
+            return sum + parseFloat(price);
+          }, 0);
+
+        setStats({
+          totalServices: servicesRes.services.length,
+          totalAppointments: appointmentsRes.appointments.length,
+          totalUsers: usersRes.users.length,
+          totalRevenue: totalRevenue,
+        });
+
+        setAppointments(appointmentsRes.appointments);
       } catch (err) {
-        console.error('Failed to fetch data:', err);
-        setError('Failed to load dashboard data');
+        console.error('Failed to fetch dashboard data:', err);
+        setError('Failed to load dashboard data. Please ensure server is running.');
       } finally {
         setLoading(false);
       }
@@ -49,178 +54,112 @@ const AdminDashboard = () => {
     fetchData();
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate('/login');
-    } catch (err) {
-      console.error('Logout failed:', err);
-    }
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <p className="text-gray-600">Loading dashboard...</p>
+      <div className="flex h-screen w-full overflow-hidden bg-[#F9FAFB]">
+        <div className="flex items-center justify-center w-full">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF2D7D]"></div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <header className="bg-white shadow-md sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
-            <p className="text-gray-600">Welcome, {user?.name}</p>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-          >
-            <FaSignOutAlt />
-            <span>Logout</span>
-          </button>
-        </div>
-      </header>
+    <div className="flex h-screen w-full overflow-hidden bg-[#F9FAFB]">
+      {/* Sidebar remains fixed on the left */}
+      <AdminSidebar />
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Main Content Area - This part scrolls independently */}
+      <main className="flex-1 h-full overflow-y-auto p-8 lg:p-12">
+        
+        {/* Header Card */}
+        <header className="bg-white rounded-2xl shadow-sm p-8 mb-10 border border-gray-50">
+          <h1 className="text-3xl font-bold text-gray-800">Dashboard Overview</h1>
+          <p className="text-gray-500 mt-2">
+            Welcome back, <span className="font-semibold text-[#FF2D7D]">{user?.name}</span>
+          </p>
+        </header>
+
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-800">
             {error}
           </div>
         )}
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 font-semibold">Total Users</p>
-                <p className="text-4xl font-bold text-gray-800 mt-2">{stats.totalUsers}</p>
-              </div>
-              <FaUsers className="text-5xl text-pink-400 opacity-20" />
-            </div>
+ {/* 🚀 STATS CARDS WITH REFINED FONT WEIGHT */}
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
+  {[
+    { label: 'Total Customers', value: stats.totalUsers, color: 'text-gray-900' },
+    { label: 'Total Appointments', value: stats.totalAppointments, color: 'text-gray-900' },
+    { label: 'Active Services', value: stats.totalServices, color: 'text-gray-900' },
+   { label: 'Total Revenue', value: `Rs. ${Math.floor(stats.totalRevenue)}`, color: 'text-green-600' }
+  ].map((stat, index) => (
+    <div 
+      key={index}
+      className="bg-white rounded-2xl p-7 shadow-sm border border-gray-100 transition-colors duration-200 hover:bg-gray-50 hover:border-pink-100 cursor-default"
+    >
+      <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+        {stat.label}
+      </h3>
+      {/* Changed font-black to font-bold for a cleaner look */}
+      <p className={`text-3xl font-bold ${stat.color}`}>
+        {stat.value}
+      </p>
+    </div>
+  ))}
+</div>
+        {/* Recent Appointments Table */}
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-50 overflow-hidden mb-10">
+          <div className="px-8 py-6 border-b border-gray-50 flex justify-between items-center">
+            <h2 className="text-xl font-bold text-gray-800">Recent Appointments</h2>
+            <button className="text-[#FF2D7D] text-sm font-bold hover:underline">View All</button>
           </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 font-semibold">Total Appointments</p>
-                <p className="text-4xl font-bold text-gray-800 mt-2">{stats.totalAppointments}</p>
-              </div>
-              <FaCalendarCheck className="text-5xl text-blue-400 opacity-20" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 font-semibold">Total Services</p>
-                <p className="text-4xl font-bold text-gray-800 mt-2">{stats.totalServices}</p>
-              </div>
-              <FaCog className="text-5xl text-purple-400 opacity-20" />
-            </div>
-          </div>
-        </div>
-
-        {/* Management Sections */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Users Management */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center space-x-3 mb-4">
-              <FaUsers className="text-2xl text-pink-600" />
-              <h2 className="text-2xl font-bold text-gray-800">User Management</h2>
-            </div>
-            <p className="text-gray-600 mb-4">Manage customer accounts and permissions</p>
-            <button
-              onClick={() => navigate('/admin/users')}
-              className="w-full px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors"
-            >
-              Manage Users
-            </button>
-          </div>
-
-          {/* Appointments Management */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center space-x-3 mb-4">
-              <FaCalendarCheck className="text-2xl text-blue-600" />
-              <h2 className="text-2xl font-bold text-gray-800">Appointments</h2>
-            </div>
-            <p className="text-gray-600 mb-4">View and manage all appointments</p>
-            <button
-              onClick={() => navigate('/admin/appointments')}
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              View Appointments
-            </button>
-          </div>
-
-          {/* Services Management */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center space-x-3 mb-4">
-              <FaCog className="text-2xl text-purple-600" />
-              <h2 className="text-2xl font-bold text-gray-800">Services</h2>
-            </div>
-            <p className="text-gray-600 mb-4">Manage salon services and pricing</p>
-            <button
-              onClick={() => navigate('/admin/services')}
-              className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-            >
-              Manage Services
-            </button>
-          </div>
-
-          {/* Reports */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center space-x-3 mb-4">
-              <FaChartBar className="text-2xl text-green-600" />
-              <h2 className="text-2xl font-bold text-gray-800">Reports</h2>
-            </div>
-            <p className="text-gray-600 mb-4">View analytics and business reports</p>
-            <button
-              disabled
-              className="w-full px-4 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed opacity-50"
-            >
-              Coming Soon
-            </button>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="mt-8 bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <button
-              onClick={() => navigate('/admin/appointments')}
-              className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg hover:shadow-md transition-shadow"
-            >
-              <FaCalendarCheck className="text-2xl text-blue-600 mx-auto mb-2" />
-              <p className="text-sm font-semibold text-gray-800">Appointments</p>
-            </button>
-            <button
-              onClick={() => navigate('/admin/users')}
-              className="p-4 bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg hover:shadow-md transition-shadow"
-            >
-              <FaUsers className="text-2xl text-pink-600 mx-auto mb-2" />
-              <p className="text-sm font-semibold text-gray-800">Users</p>
-            </button>
-            <button
-              onClick={() => navigate('/admin/services')}
-              className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg hover:shadow-md transition-shadow"
-            >
-              <FaCog className="text-2xl text-purple-600 mx-auto mb-2" />
-              <p className="text-sm font-semibold text-gray-800">Services</p>
-            </button>
-            <button
-              onClick={handleLogout}
-              className="p-4 bg-gradient-to-br from-red-50 to-red-100 rounded-lg hover:shadow-md transition-shadow"
-            >
-              <FaSignOutAlt className="text-2xl text-red-600 mx-auto mb-2" />
-              <p className="text-sm font-semibold text-gray-800">Logout</p>
-            </button>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50/50">
+                  <th className="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Customer</th>
+                  <th className="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Service</th>
+                  <th className="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Date</th>
+                  <th className="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {appointments.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" className="px-8 py-12 text-center text-gray-400 font-medium italic">
+                      No appointments found in the system.
+                    </td>
+                  </tr>
+                ) : (
+                  appointments.slice(0, 6).map((apt) => (
+                    <tr key={apt.id || apt._id} className="hover:bg-gray-50/80 transition-colors">
+                      <td className="px-8 py-5">
+                        <span className="text-sm font-bold text-gray-800">{apt.user?.name || 'Guest'}</span>
+                      </td>
+                      <td className="px-8 py-5">
+                        <span className="text-sm text-gray-600">{apt.service?.name}</span>
+                      </td>
+                      <td className="px-8 py-5 text-sm text-gray-500 font-medium">
+                        {new Date(apt.appointmentDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </td>
+                      <td className="px-8 py-5">
+                        <span className={`
+                          inline-flex items-center px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider
+                          ${apt.status === 'CONFIRMED' ? 'bg-blue-50 text-blue-600' :
+                            apt.status === 'COMPLETED' ? 'bg-green-50 text-green-600' :
+                            apt.status === 'CANCELLED' ? 'bg-red-50 text-red-600' :
+                            'bg-orange-50 text-orange-600'}
+                        `}>
+                          {apt.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </main>
